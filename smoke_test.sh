@@ -26,6 +26,8 @@ check "bad date"          400 POST   /bookings '{"guest_name":"Anu","instructor_
 check "missing fields"    400 POST   /bookings '{"guest_name":"Anu"}'
 check "unknown instructor" 404 POST  /bookings '{"guest_name":"Anu","instructor_id":99,"date":"2026-10-05","slot":"morning"}'
 check "list by date"      200 GET    '/bookings?date=2026-10-05'
+first_slot=$(curl -s "$BASE/bookings?date=2026-10-05" | grep -o '"slot":"[a-z]*"' | head -1)
+[ "$first_slot" = '"slot":"morning"' ] || { echo "FAIL: morning should be listed first, got $first_slot"; exit 1; }
 check "cancel"            204 DELETE /bookings/1
 check "cancel again"      404 DELETE /bookings/1
 echo "All $pass checks passed"

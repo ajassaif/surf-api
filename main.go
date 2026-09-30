@@ -79,7 +79,7 @@ func listBookings(c *gofr.Context) (any, error) {
 		args = append(args, date)
 	}
 
-	rows, err := c.SQL.QueryContext(c, query+" ORDER BY lesson_date, slot", args...)
+	rows, err := c.SQL.QueryContext(c, query+" ORDER BY lesson_date, CASE slot WHEN 'morning' THEN 0 ELSE 1 END", args...)
 	if err != nil {
 		return nil, err
 	}
