@@ -19,13 +19,17 @@ jobs:
           go vet ./...
           go build -o surf-api .
       - name: Run server and smoke test
+        shell: bash
         run: |
           ./surf-api > server.log 2>&1 &
           for i in $(seq 1 30); do curl -sf localhost:8000/.well-known/health >/dev/null && break; sleep 1; done
-          ./smoke_test.sh
+          { echo '### Smoke test'; echo '```'; ./smoke_test.sh; echo '```'; } | tee -a "$GITHUB_STEP_SUMMARY"
+          test "${PIPESTATUS[0]}" -eq 0
       - name: Server log
         if: always()
-        run: cat server.log || true
+        run: |
+          cat server.log || true
+          { echo '### Server log (first 40 lines)'; echo '```'; head -n 40 server.log; echo '```'; } >> "$GITHUB_STEP_SUMMARY" || true
       - name: Commit go.sum
         if: success()
         run: |
